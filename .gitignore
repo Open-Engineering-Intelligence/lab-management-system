@@ -1,0 +1,11 @@
+# WorkBuddy internal state and memory
+.workbuddy/
+
+# WorkBuddy preview / session artifacts
+.preview-*.png
+*.genie
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

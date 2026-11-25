@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>三流内容切换面板</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --text:#1f2430; --muted:#6b7280;
+    --border:#e5e7eb; --people:#185FA5; --goods:#BA7517; --info:#534AB7;
+    --people-bg:#E6F1FB; --goods-bg:#FAEEDA; --info-bg:#EEEDFE;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;
+    font-size:14px;line-height:1.6;padding:32px 20px}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:20px;font-weight:600;margin:0 0 6px}
+  .lead{color:var(--muted);margin:0 0 24px;font-size:13px}
+  .switches{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+  .sw{display:flex;align-items:center;gap:12px;background:var(--surface);
+    border:1px solid var(--border);border-radius:12px;padding:16px 18px;cursor:pointer;
+    text-align:left;transition:border-color .15s,background .15s;user-select:none}
+  .sw:hover{border-color:#c9ced6}
+  .sw[aria-pressed="true"]{border-color:currentColor}
+  .sw .dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto}
+  .sw .label{font-size:15px;font-weight:600}
+  .sw .state{margin-left:auto;font-size:12px;color:var(--muted)}
+  .sw[aria-pressed="true"] .state{color:currentColor}
+  .sw .track{margin-left:auto;width:36px;height:20px;border-radius:10px;background:#d8dce3;position:relative;transition:background .15s}
+  .sw[aria-pressed="true"] .track{background:currentColor}
+  .sw .track::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+  .sw[aria-pressed="true"] .track::after{left:18px}
+  .sw.people{color:var(--people)} .sw.goods{color:var(--goods)} .sw.info{color:var(--info)}
+  .sw.people .dot{background:var(--people)} .sw.goods .dot{background:var(--goods)} .sw.info .dot{background:var(--info)}
+  .sw .label,.sw .state{color:var(--text)}
+  .status{font-size:13px;color:var(--muted);margin:0 0 12px}
+  .panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;align-items:start}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px}
+  .panel[hidden]{display:none!important}
+  .panel h2{font-size:15px;font-weight:600;margin:0 0 4px;display:flex;align-items:center;gap:9px}
+  .panel h2 .dot{width:10px;height:10px;border-radius:50%}
+  .panel .desc{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .panel.people h2 .dot{background:var(--people)}
+  .panel.goods h2 .dot{background:var(--goods)}
+  .panel.info h2 .dot{background:var(--info)}
+  .row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--border);font-size:13px}
+  .row b{font-weight:600}
+  .row .tag{font-size:12px;color:var(--muted)}
+  .empty{border:1px dashed var(--border);border-radius:12px;padding:28px;color:var(--muted);
+    text-align:center;font-size:13px;background:var(--surface)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>三流内容切换面板</h1>
+  <p class="lead">初始三项全部隐藏。点击卡片显示对应内容，再次点击隐藏；三项可独立组合，互不干扰。</p>
+
+  <div class="switches" role="group" aria-label="三流内容开关">
+    <button class="sw people" type="button" data-flow="people" aria-pressed="false">
+      <i class="dot"></i><span class="label">人流</span><span class="state">已隐藏</span><i class="track"></i>
+    </button>
+    <button class="sw goods" type="button" data-flow="goods" aria-pressed="false">
+      <i class="dot"></i><span class="label">物流</span><span class="state">已隐藏</span><i class="track"></i>
+    </button>
+    <button class="sw info" type="button" data-flow="info" aria-pressed="false">
+      <i class="dot"></i><span class="label">信息流</span><span class="state">已隐藏</span><i class="track"></i>
+    </button>
+  </div>
+
+  <p class="status" id="status">当前显示 0 / 3 组内容</p>
+
+  <div class="panels" id="panels">
+    <section class="panel people" data-panel="people" hidden>
+      <h2><i class="dot"></i>人流</h2>
+      <p class="desc">记录人员的进入、离开与在场状态，以及相互之间的移动关系。</p>
+      <div class="row"><span>进入 · P1 → P2</span><span class="tag">强</span></div>
+      <div class="row"><span>在场 · P5</span><span class="tag">中</span></div>
+      <div class="row"><span>离开 · P7 → P8</span><span class="tag">弱</span></div>
+    </section>
+    <section class="panel goods" data-panel="goods" hidden>
+      <h2><i class="dot"></i>物流</h2>
+      <p class="desc">记录物品的领用、归还与位置流转，体现物品在节点间的移动。</p>
+      <div class="row"><span>领用 · P3 → P6</span><span class="tag">强</span></div>
+      <div class="row"><span>转移 · P5 → P9</span><span class="tag">中</span></div>
+      <div class="row"><span>归还 · P8 → P9</span><span class="tag">弱</span></div>
+    </section>
+    <section class="panel info" data-panel="info" hidden>
+      <h2><i class="dot"></i>信息流</h2>
+      <p class="desc">记录通知、资料与查阅触达，展示信息从发布方传向接收方。</p>
+      <div class="row"><span>发布 · P2 → P5</span><span class="tag">强</span></div>
+      <div class="row"><span>查阅 · P6 → P9</span><span class="tag">中</span></div>
+      <div class="row"><span>确认 · P5 → P8</span><span class="tag">弱</span></div>
+    </section>
+  </div>
+
+  <div class="empty" id="empty">三项内容均已隐藏，点击上方卡片进行切换</div>
+</div>
+
+<script>
+(function(){
+  var root = document.querySelector('.wrap');
+  var status = document.getElementById('status');
+  var empty = document.getElementById('empty');
+
+  function update(){
+    var shown = 0;
+    root.querySelectorAll('.panel').forEach(function(p){ if(!p.hidden) shown++; });
+    status.textContent = '当前显示 ' + shown + ' / 3 组内容';
+    empty.hidden = shown > 0;
+  }
+
+  root.querySelectorAll('.sw').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var key = btn.getAttribute('data-flow');
+      var willShow = btn.getAttribute('aria-pressed') !== 'true';
+      btn.setAttribute('aria-pressed', willShow ? 'true' : 'false');
+      btn.querySelector('.state').textContent = willShow ? '已显示' : '已隐藏';
+      var panel = root.querySelector('[data-panel="' + key + '"]');
+      if(panel) panel.hidden = !willShow;
+      update();
+    });
+  });
+
+  update();
+})();
+</script>
+</body>
+</html>
